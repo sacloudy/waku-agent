@@ -68,24 +68,42 @@ def sync_to_apple_calendar(title: str, start: str, end: str, notes: str = "") ->
         return "Apple Calendar sync skipped (not macOS)."
     safe_title = title.replace("\\", "").replace('"', "'")
     safe_notes = notes.replace("\\", "").replace('"', "'")
+    # Prefer a dedicated "Jarvis" calendar, but macOS can't create calendars in
+    # iCloud-only accounts via AppleScript — fall back to the first writable
+    # calendar and report which one was actually used.
     script = (
         _applescript_date("startDate", start)
         + _applescript_date("endDate", end)
         + f'''
 tell application "Calendar"
   if not (exists calendar "{APPLE_CALENDAR_NAME}") then
-    make new calendar with properties {{name:"{APPLE_CALENDAR_NAME}"}}
+    try
+      make new calendar with properties {{name:"{APPLE_CALENDAR_NAME}"}}
+      delay 1
+    end try
   end if
-  tell calendar "{APPLE_CALENDAR_NAME}"
+  if exists calendar "{APPLE_CALENDAR_NAME}" then
+    set targetCal to calendar "{APPLE_CALENDAR_NAME}"
+  else
+    set targetCal to first calendar whose writable is true
+  end if
+  tell targetCal
     make new event with properties {{summary:"{safe_title}", start date:startDate, end date:endDate, description:"{safe_notes}"}}
   end tell
+  return name of targetCal
 end tell'''
     )
     try:
         result = subprocess.run(
             ["osascript", "-e", script], capture_output=True, text=True, timeout=30
         )
-    except (OSError, subprocess.TimeoutExpired) as exc:
+    except subprocess.TimeoutExpired:
+        return (
+            "Apple Calendar sync timed out — this usually means macOS is showing a "
+            "permission dialog ('would like to add to your Calendar'). The event is safe "
+            "in the local calendar; approve the dialog and ask me to create it again."
+        )
+    except OSError as exc:
         return f"Apple Calendar sync FAILED ({exc}) — the event is still in the local calendar."
     if result.returncode != 0:
         detail = (result.stderr or "").strip()[:120]
@@ -94,7 +112,8 @@ end tell'''
             "calendar. If this is a permissions error, allow your terminal to control "
             "Calendar in System Settings > Privacy & Security > Automation."
         )
-    return f"Also added to Apple Calendar (calendar '{APPLE_CALENDAR_NAME}')."
+    used = (result.stdout or "").strip() or APPLE_CALENDAR_NAME
+    return f"Also added to Apple Calendar (calendar '{used}')."
 
 
 def make_tool(conn: sqlite3.Connection, home: Path, apple_calendar: bool = False) -> Tool:
