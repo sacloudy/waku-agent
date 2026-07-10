@@ -53,7 +53,7 @@ class Jarvis:
                 observer=notify,
             )
 
-            self.session.add_exchange(user_message, result.reply)
+            self.session.add_exchange(user_message, result.reply, tool_calls=result.tool_calls)
             if self.memory is not None:
                 self.memory.maybe_consolidate(notify=notify)
 

@@ -43,13 +43,31 @@ def make_tool(conn: sqlite3.Connection, home: Path) -> Tool:
             # default: one hour
             from datetime import datetime, timedelta
             end = (datetime.fromisoformat(start) + timedelta(hours=1)).isoformat(timespec="minutes")
+
+        # idempotence guard: same title+start = same event. A confused model
+        # (or an impatient user) must not be able to triple-book a meeting.
+        start = start[:16]  # normalize 2026-07-11T17:00:00 → 2026-07-11T17:00
+        end = end[:16]
+        existing = conn.execute(
+            "SELECT id FROM calendar_events WHERE title = ? AND start = ?", (title, start)
+        ).fetchone()
+        if existing:
+            return (
+                f"Event '{title}' at {start} already exists (not duplicated). "
+                f"It lives in {home / 'calendar.ics'} — import it with: open {home / 'calendar.ics'}"
+            )
+
         conn.execute(
             'INSERT INTO calendar_events (title, start, "end", attendees, notes) VALUES (?,?,?,?,?)',
             (title, start, end, attendees, notes),
         )
         conn.commit()
         _write_ics(home, title, start, end, attendees)
-        return f"Event created: '{title}' {start} → {end}" + (f" with {attendees}" if attendees else "")
+        return (
+            f"Event created: '{title}' {start} → {end}"
+            + (f" with {attendees}" if attendees else "")
+            + f". Saved to {home / 'calendar.ics'} — import into the calendar app with: open {home / 'calendar.ics'}"
+        )
 
     return Tool(
         name="create_event",

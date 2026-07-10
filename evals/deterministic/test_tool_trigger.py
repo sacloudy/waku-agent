@@ -45,6 +45,39 @@ def test_create_event_writes_db_and_ics(tmp_path):
     assert "SUMMARY:Coffee with Alex" in (tmp_path / "home" / "calendar.ics").read_text()
 
 
+def test_create_event_is_idempotent(tmp_path):
+    """Regression: first live test triple-booked a meeting — the model re-ran
+    create_event on follow-up turns. Same title+start must never duplicate."""
+    gate = response([text_block('{"retrieve": false, "query": "", "reason": "test"}')])
+    args = {"title": "Swim with Sergey", "start": "2026-07-11T17:00"}
+    script = [gate] + [
+        response([tool_block("create_event", args, "tu_1"),
+                  tool_block("create_event", {**args, "start": "2026-07-11T17:00:00"}, "tu_2")], "tool_use"),
+        response([text_block("Booked once.")]),
+    ]
+    app = make_jarvis(tmp_path / "home", client=ScriptedClient(script))
+    result = app.respond("swim with sergey saturday 5pm")
+
+    rows = app.conn.execute("SELECT COUNT(*) FROM calendar_events").fetchone()[0]
+    assert rows == 1, f"expected 1 event, got {rows}"
+    assert "already exists" in result.tool_calls[1]["output"]
+    ics = (tmp_path / "home" / "calendar.ics").read_text()
+    assert ics.count("SUMMARY:Swim with Sergey") == 1
+
+
+def test_history_records_tool_use(tmp_path):
+    """Regression companion: the next turn's working memory must show the
+    [tools used: ...] line so the model knows it already acted."""
+    gate = response([text_block('{"retrieve": false, "query": "", "reason": "test"}')])
+    script = [gate] + [
+        response([tool_block("create_event", {"title": "X", "start": "2026-07-14T09:00"})], "tool_use"),
+        response([text_block("Done.")]),
+    ]
+    app = make_jarvis(tmp_path / "home", client=ScriptedClient(script))
+    app.respond("book X monday 9am")
+    assert "[tools used: create_event" in app.session.history[-1]["content"]
+
+
 def test_no_tool_turn_ends_loop_in_one_iteration(tmp_path):
     script = [
         response([text_block('{"retrieve": false, "query": "", "reason": "test"}')]),

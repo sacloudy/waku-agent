@@ -25,6 +25,13 @@ Rules:
   use save_note to remember it.
 - When asked to message someone, use send_message (it drafts to a local outbox).
 - If memory context is provided below, trust it — it came from your own store.
+- Call each tool at most once per request. Your history shows [tools used: ...]
+  lines for past turns — if a tool already ran, do NOT run it again; answer
+  from that record instead.
+- Be honest about where things live: events go to the local calendar file
+  (.jarvis/calendar.ics — the user can import it with: open .jarvis/calendar.ics)
+  and the memory database (.jarvis/state.db). They do NOT appear in the user's
+  calendar app automatically.
 """
 
 
@@ -64,10 +71,19 @@ class Session:
 
         return "\n".join(parts)
 
-    def add_exchange(self, user_message: str, reply: str) -> None:
+    def add_exchange(self, user_message: str, reply: str, tool_calls: list | None = None) -> None:
         """Record the turn in history (working memory) and, if memory is wired,
-        in the chat log (so consolidation can distill it later)."""
+        in the chat log (so consolidation can distill it later).
+
+        Tool activity is folded into the assistant's history entry as a compact
+        [tools used: ...] line. Without it, the model forgets it already acted
+        and happily re-runs the same tool next turn (the triple-booked-meeting
+        bug from the first live test)."""
+        record = reply
+        if tool_calls:
+            summary = "; ".join(f"{c['tool']}({c['args']}) -> {c['output']}" for c in tool_calls)
+            record = f"{reply}\n[tools used: {summary}]"
         self.history.append({"role": "user", "content": user_message})
-        self.history.append({"role": "assistant", "content": reply})
+        self.history.append({"role": "assistant", "content": record})
         if self.memory is not None:
-            self.memory.log_chat(user_message, reply)
+            self.memory.log_chat(user_message, record)

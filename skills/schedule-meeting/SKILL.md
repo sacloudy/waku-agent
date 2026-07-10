@@ -20,6 +20,6 @@ description: Schedule meetings, calls, or events on the calendar. Use when the u
 
 | Situation | Do |
 |---|---|
-| No time given | Ask one clarifying question, don't guess a day |
+| No time given | Propose a concrete time instead of asking an open question — if memory shows the attendee's preference, lead with it ("Alex prefers mornings — Friday 9am?"). Only ask openly when memory gives you nothing |
 | Past date requested | Point it out, suggest the next occurrence |
 | Attendee unknown to memory | Schedule anyway; offer to `save_note` who they are |

@@ -18,8 +18,8 @@ from jarvis.loop.models import get_client
 class AnthropicJudge(DeepEvalBaseLLM):
     def __init__(self, model: str | None = None):
         self.settings = load_settings()
+        self.client = get_client(self.settings)  # fills provider-default model ids
         self.model = model or self.settings.small_model
-        self.client = get_client(self.settings)
 
     def load_model(self):
         return self.client
