@@ -29,18 +29,38 @@ def run(suite: str) -> int:
     )
 
 
+def report(deterministic: str, judge: str) -> None:
+    """Persist the verdict so the dashboard can show it."""
+    from datetime import datetime, timezone
+    import json
+
+    from jarvis.config import load_settings
+
+    settings = load_settings()
+    settings.ensure_home()
+    (settings.home / "eval_report.json").write_text(json.dumps({
+        "deterministic": deterministic,
+        "judge": judge,
+        "ran_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+    }))
+
+
 def main() -> None:
     failed = run("deterministic")
     if failed:
+        report("fail", "not run")
         print("\n⛔ GATE CLOSED — deterministic evals failed. Fix before releasing.")
         sys.exit(1)
 
     if os.getenv("ANTHROPIC_API_KEY"):
         failed = run("judge")
         if failed:
+            report("pass", "fail")
             print("\n⛔ GATE CLOSED — judge scores below threshold.")
             sys.exit(1)
+        report("pass", "pass")
     else:
+        report("pass", "skipped")
         print("\n(judge suite skipped — no ANTHROPIC_API_KEY)")
 
     print("\n✅ GATE OPEN — safe to release.")

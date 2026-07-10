@@ -2,6 +2,12 @@
   "version": "0.0.1",
   "configurations": [
     {
+      "name": "jarvis-dashboard",
+      "runtimeExecutable": ".venv/bin/python",
+      "runtimeArgs": ["-m", "jarvis.ops.dashboard"],
+      "port": 7777
+    },
+    {
       "name": "phoenix-traces",
       "runtimeExecutable": ".venv/bin/python",
       "runtimeArgs": ["-m", "phoenix.server.main", "serve"],

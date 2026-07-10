@@ -13,6 +13,11 @@ SHOULD_WAKE = [
     ("walku waku", "waku waku"),             # one-letter mangle → fuzzy match
     ("Hey Jarvis", "hey jarvis"),
     ("hey computer, what's up", "hey computer"),
+    # regression from the first live session: whisper wrote the wake word in
+    # kana — variants after a comma cover other scripts
+    ("わくわく", "waku waku,わくわく"),
+    ("わくわくわく", "waku waku,わくわく"),
+    ("小助手你好", "waku waku,小助手"),
 ]
 
 SHOULD_NOT_WAKE = [

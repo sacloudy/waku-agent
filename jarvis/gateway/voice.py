@@ -54,8 +54,10 @@ class Ears:
             compute_type="int8",
         )
 
-    def transcribe(self, audio) -> str:
-        segments, _ = self.model.transcribe(audio, language=os.getenv("JARVIS_WHISPER_LANG"))
+    def transcribe(self, audio, language: str | None = None) -> str:
+        segments, _ = self.model.transcribe(
+            audio, language=language or os.getenv("JARVIS_WHISPER_LANG")
+        )
         return " ".join(seg.text.strip() for seg in segments).strip()
 
 
@@ -90,27 +92,33 @@ class Mouth:
 def matches_wake(text: str, wake_word: str) -> bool:
     """Does a transcript contain the (customizable) wake word?
 
-    Fuzzy on purpose: Whisper hears "waku waku" as "wakuwaku", "Waku, waku!"
-    or "walku waku" depending on your mic and accent. We normalize, check
-    substring both spaced and unspaced, then fall back to a sliding-window
-    similarity ratio. Pure function → deterministic eval covers it.
+    Fuzzy on purpose: Whisper hears "waku waku" as "wakuwaku", "Waku, waku!",
+    "walku waku" — or transcribes it as Japanese kana わくわく (the first live
+    test!). So: `wake_word` accepts comma-separated variants across scripts
+    ("waku waku,わくわく"), normalization keeps kana AND CJK, and matching is
+    substring + sliding-window similarity. Pure function → deterministic evals.
     """
     import difflib
     import re
 
     def norm(s: str) -> str:
-        return re.sub(r"[^a-z0-9一-鿿 ]", "", s.lower()).strip()
+        # keep latin, digits, hiragana/katakana (぀-ヿ), CJK ideographs (一-鿿)
+        return re.sub(r"[^a-z0-9぀-ヿ一-鿿 ]", "", s.lower()).strip()
 
-    heard, wake = norm(text), norm(wake_word)
-    if not heard or not wake:
+    heard = norm(text)
+    if not heard:
         return False
-    if wake in heard or wake.replace(" ", "") in heard.replace(" ", ""):
-        return True
-    words, n = heard.split(), len(wake.split())
-    return any(
-        difflib.SequenceMatcher(None, " ".join(words[i : i + n]), wake).ratio() >= 0.75
-        for i in range(max(0, len(words) - n + 1))
-    )
+
+    for variant in (v for v in (norm(v) for v in wake_word.split(",")) if v):
+        if variant in heard or variant.replace(" ", "") in heard.replace(" ", ""):
+            return True
+        words, n = heard.split(), len(variant.split())
+        if any(
+            difflib.SequenceMatcher(None, " ".join(words[i : i + n]), variant).ratio() >= 0.75
+            for i in range(max(0, len(words) - n + 1))
+        ):
+            return True
+    return False
 
 
 def _mic_threshold() -> float:
@@ -162,6 +170,10 @@ def wake_loop(jarvis: Jarvis, mouth: "Mouth", wake_word: str) -> None:
     ears = Ears()                    # accurate, only after wake
     ack = os.getenv("JARVIS_WAKE_ACK", "Yes?")
     block = SAMPLE_RATE // 10
+    # Pin the scout's transcription language to match the wake word's script —
+    # otherwise Whisper hears "waku waku" and helpfully writes わくわく, which
+    # a latin wake word never matches. Commands after wake still auto-detect.
+    wake_lang = os.getenv("JARVIS_WAKE_LANG") or ("en" if wake_word.isascii() else None)
     print(f'Listening for "{wake_word}" — Ctrl-C to quit.')
 
     def status(msg: str) -> None:
@@ -186,9 +198,11 @@ def wake_loop(jarvis: Jarvis, mouth: "Mouth", wake_word: str) -> None:
             if float(np.sqrt((chunk**2).mean())) < _mic_threshold():
                 status("listening…")
                 continue
-            heard_scan = scout.transcribe(chunk)
+            heard_scan = scout.transcribe(chunk, language=wake_lang)
             if not matches_wake(heard_scan, wake_word):
                 status(f'heard: "{heard_scan}"' if heard_scan else "listening…")
+                if heard_scan:  # near-misses belong in the trace (wake tuning!)
+                    jarvis.tracer.event("wake_scan", {"heard": heard_scan, "matched": False})
                 continue
 
             print("\n🔔 wake word!")

@@ -8,7 +8,7 @@
 # `source .venv/bin/activate` — both work, this is just fewer steps.
 PY := $(shell [ -x .venv/bin/python ] && echo .venv/bin/python || echo python)
 
-.PHONY: run voice telegram trace eval eval-judge gate lint
+.PHONY: run voice telegram dashboard trace eval eval-judge gate lint
 
 run:            ## chat with Jarvis in the terminal
 	$(PY) -m jarvis
@@ -19,7 +19,10 @@ voice:          ## talk to it — push-to-talk, or always-on with JARVIS_WAKE_WO
 telegram:       ## phone → laptop (needs TELEGRAM_BOT_TOKEN in .env)
 	$(PY) -m jarvis telegram
 
-trace:          ## local trace dashboard at http://localhost:6006
+dashboard:      ## everything on one page — http://localhost:7777
+	$(PY) -m jarvis.ops.dashboard
+
+trace:          ## deep trace waterfalls (Phoenix) at http://localhost:6006
 	$(PY) -m phoenix.server.main serve
 
 eval:           ## deterministic evals (0/1, no judge involved)
