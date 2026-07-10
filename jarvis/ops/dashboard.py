@@ -516,14 +516,15 @@ function archSVG(d){
     ${box(386,132,136,48,"Tools","create_event…","tools","","tools")}
     ${flow("M446 120 L446 132")}${flow("M468 132 L468 120")}
     ${flow("M336 100 L372 100","","e-wm-loop")}
-    ${flow("M536 110 L576 110")}${flowLbl(546,104,"reply")}
-    ${box(576,84,110,52,"Reply","→ back to you","loop","","reply")}
+    ${flow("M536 110 L556 110")}${flowLbl(540,104,"reply")}
+    ${box(556,84,104,52,"Reply","→ back to you","loop","","reply")}
     <!-- reply loops back to the gateway (next turn) -->
-    <path class="flow" id="e-reply-gw" d="M632 84 C632 42 360 42 96 68" marker-end="url(#arr)"/>
+    <path class="flow" id="e-reply-gw" d="M608 84 C608 42 360 42 96 68" marker-end="url(#arr)"/>
     ${flowLbl(372,38,"next turn")}
-    <!-- every turn is saved for consolidation (right inner lane) -->
-    <path class="flow dash" id="e-reply-save" d="M662 128 C684 140 686 170 686 240 L686 560" marker-end="url(#arr)"/>
-    ${flowLbl(692,360,"save chats")}
+    <!-- every turn is saved for consolidation: down the right inner lane,
+         then left into the consolidation box -->
+    <path class="flow dash" id="e-reply-save" d="M652 136 C666 150 666 200 666 600 L648 600" marker-end="url(#arr)"/>
+    ${flowLbl(662,340,"save chats",'end')}
 
     <!-- retrieval gate feeding working memory (the hero) -->
     <path class="gate" id="n-gate" d="M264 250 L340 296 L264 342 L188 296 Z"/>
@@ -550,8 +551,8 @@ function archSVG(d){
     <rect class="container ops" x="700" y="20" width="308" height="392" rx="16"/>
     ${lbl(720,48,"LLM OPS — the outer loop")}
     <!-- every turn feeds the trace -->
-    <path class="flow" id="e-reply-trace" d="M686 106 C712 98 724 92 748 90" marker-end="url(#arr)"/>
-    ${flowLbl(700,82,"each turn")}
+    <path class="flow" id="e-reply-trace" d="M660 100 C700 94 722 92 748 92" marker-end="url(#arr)"/>
+    ${flowLbl(700,80,"each turn")}
     ${box(720,68,272,52,"Trace",s.trace_files+" file(s) · always on","ops","","trace")}
     ${flow("M856 120 L856 138")}
     ${box(720,138,272,52,"Eval","deterministic + judge","ops")}
