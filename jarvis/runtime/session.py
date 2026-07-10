@@ -11,7 +11,6 @@ away. What persists lives in jarvis/memory. Working memory =
 
 from __future__ import annotations
 
-from pathlib import Path
 
 from jarvis.config import Settings
 

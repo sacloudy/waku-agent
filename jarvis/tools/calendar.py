@@ -18,7 +18,10 @@ def _write_ics(home: Path, title: str, start: str, end: str, attendees: str) -> 
     """Append a minimal VEVENT. ISO timestamps like 2026-07-14T09:00 become
     ICS's compact 20260714T090000 form."""
     ics_path = home / "calendar.ics"
-    dt = lambda s: s.replace("-", "").replace(":", "") + ("00" if len(s) == 16 else "")
+
+    def dt(s: str) -> str:
+        return s.replace("-", "").replace(":", "") + ("00" if len(s) == 16 else "")
+
     event = (
         "BEGIN:VEVENT\n"
         f"SUMMARY:{title}\n"

@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "phoenix-traces",
+      "runtimeExecutable": ".venv/bin/python",
+      "runtimeArgs": ["-m", "phoenix.server.main", "serve"],
+      "port": 6006
+    }
+  ]
+}
