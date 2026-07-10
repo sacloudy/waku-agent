@@ -434,85 +434,73 @@ function wireChat(){
 }
 function scrollChat(){ const l=document.getElementById("chatlog"); if(l) window.scrollTo(0, document.body.scrollHeight); }
 
-// --- Architecture: a live SVG that mirrors the system-design whiteboard.
-// Containment (Harness wraps the ephemeral run), the Loop as a real cycle,
-// memory feeding UP into working memory through the gate, consolidation
-// looping back, and LLM Ops as a separate feedback loop. Every node is live
-// and clickable.
+// --- Architecture: a calm live SVG that mirrors the whiteboard's structure
+// (Harness wraps the ephemeral run · Loop is a cycle · memory feeds up through
+// the gate · LLM Ops is a separate loop). Deliberately few arrows + lots of
+// air — the detail lives in each tab. Every node is live and clickable.
 function archSVG(d){
   const s = d.stats;
   const box = (x,y,w,h,title,sub,view,cls="") =>
     `<g class="node ${cls}" ${view?`onclick="location.hash='${view}'"`:""}>
-       <rect class="bx" x="${x}" y="${y}" width="${w}" height="${h}" rx="8"/>
-       <text class="nt" x="${x+11}" y="${y+21}">${title}</text>
-       ${sub?`<text class="ns" x="${x+11}" y="${y+38}">${sub}</text>`:""}
+       <rect class="bx" x="${x}" y="${y}" width="${w}" height="${h}" rx="9"/>
+       <text class="nt" x="${x+13}" y="${y+24}">${title}</text>
+       ${sub?`<text class="ns" x="${x+13}" y="${y+42}">${sub}</text>`:""}
      </g>`;
   const lbl = (x,y,t) => `<text class="grp" x="${x}" y="${y}">${t}</text>`;
   const flow = (d2,cls="") => `<path class="flow ${cls}" d="${d2}"/>`;
-  const flowLbl = (x,y,t) => `<text class="fl" x="${x}" y="${y}">${t}</text>`;
+  const flowLbl = (x,y,t,anchor="start") => `<text class="fl" x="${x}" y="${y}" text-anchor="${anchor}">${t}</text>`;
 
-  return `<div style="overflow-x:auto"><svg viewBox="0 0 940 560" class="arch" role="img">
+  return `<div style="overflow-x:auto"><svg viewBox="0 0 960 500" class="arch" role="img">
     <defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path d="M0 0 L10 5 L0 10 z" class="head"/></marker></defs>
 
     <!-- HARNESS container -->
-    <rect class="container" x="10" y="26" width="628" height="516" rx="12"/>
-    ${lbl(24,46,"HARNESS — one turn, everything inside is ephemeral")}
+    <rect class="container" x="10" y="20" width="628" height="464" rx="14"/>
+    ${lbl(28,46,"HARNESS — one ephemeral turn")}
 
-    <!-- gateway in -->
-    ${box(28,64,120,34,"Gateway","cli · voice · web","chat")}
-    ${flow("M88 98 L88 120")}
-    <!-- working-memory inputs -->
-    ${box(28,120,120,90,"Working memory","SOUL + memory + history","memory")}
-    ${flow("M148 165 L214 165")}${flowLbl(158,158,"assembled")}
+    <!-- the turn: gateway → working memory → loop → reply -->
+    ${box(28,64,120,52,"Gateway","cli · voice · web","chat")}
+    ${flow("M148 90 L176 90")}
+    ${box(176,64,132,52,"Working memory","assembled per turn","memory")}
 
-    <!-- LOOP cycle -->
-    <rect class="loopbox" x="214" y="112" width="196" height="150" rx="10"/>
-    ${lbl(224,130,"LOOP")}
-    ${box(230,138,164,42,"LLM agent","reason","loop")}
-    ${box(230,206,164,44,"Tools","create_event · note · message","tools")}
-    ${flow("M300 180 L300 206")}${flow("M330 206 L330 180")}
-    <text class="fl" x="308" y="197">act</text>
-    ${flow("M410 159 L470 159")}${flowLbl(420,152,"end-loop")}
-    ${box(470,138,148,42,"Reply","→ gateway","loop")}
-    ${flow("M544 98 L544 138")}${flowLbl(486,112,"guardrails")}
-    <path class="flow" d="M544 98 C544 72 300 78 148 88" marker-end="url(#arr)"/>
+    <rect class="loopbox" x="336" y="58" width="150" height="118" rx="11"/>
+    ${lbl(348,50,"LOOP")}
+    ${box(348,68,126,40,"LLM agent","reason","loop")}
+    ${box(348,120,126,44,"Tools","create_event…","tools")}
+    ${flow("M401 108 L401 120")}${flow("M421 120 L421 108")}
+    ${flow("M308 90 L336 90")}
+    ${flow("M486 100 L520 100")}
+    ${box(520,76,104,48,"Reply","→ back to you","loop")}
+    <path class="flow" d="M572 76 C572 40 320 40 88 62" marker-end="url(#arr)"/>
 
-    <!-- retrieval gate feeding working memory -->
-    <path class="gate" d="M88 250 L150 278 L88 306 L26 278 Z"/>
-    <text class="nt" x="58" y="276" text-anchor="middle">Retrieval</text>
-    <text class="nt" x="58" y="290" text-anchor="middle">gate</text>
-    ${flow("M88 250 L88 210","dash")}${flowLbl(96,236,"only if needed")}
-    <text class="ns" x="160" y="282">${s.gate_skips} skipped · ${s.gate_retrieves} retrieved</text>
+    <!-- retrieval gate feeding working memory (the hero) -->
+    <path class="gate" d="M242 210 L318 244 L242 278 L166 244 Z"/>
+    <text class="nt" x="242" y="240" text-anchor="middle">Retrieval gate</text>
+    <text class="ns" x="242" y="258" text-anchor="middle">${s.gate_skips} skip · ${s.gate_retrieves} retrieve</text>
+    ${flow("M242 210 L242 116","dash")}${flowLbl(252,168,"only if needed")}
 
-    <!-- memory stores feeding UP into the gate -->
-    ${lbl(24,338,"MEMORY — three pillars")}
-    ${box(28,346,180,52,"Procedural · SKILL.md",`${d.skills.length} skill(s)`,"memory")}
-    ${box(224,346,180,52,"Semantic · FTS5",`${d.facts.length} facts`,"memory")}
-    ${box(420,346,180,52,"Episodic",`${d.episodes.length} episodes`,"memory")}
-    ${flow("M118 346 L92 306")}
-    ${flow("M314 346 L110 300","dash")}
-    ${flow("M510 346 L120 298","dash")}
-    ${flowLbl(300,330,"keyword top-k")}
+    <!-- memory pillars → one clean arrow up into the gate -->
+    ${lbl(28,318,"MEMORY — three pillars")}
+    ${box(28,330,188,54,"Procedural","SKILL.md · "+d.skills.length+" skill(s)","memory")}
+    ${box(228,330,188,54,"Semantic · FTS5",d.facts.length+" facts","memory")}
+    ${box(428,330,182,54,"Episodic",d.episodes.length+" episodes","memory")}
+    ${flow("M242 330 L242 280","dash")}
 
-    <!-- consolidation loop-back -->
-    ${box(224,440,376,50,"Consolidation · every "+d.consolidate_every+" exchanges",`${d.chat_pending}/${d.consolidate_every*2} queued → distilled into facts`,"memory")}
-    <path class="flow dash" d="M470 180 C640 210 660 470 600 465" marker-end="url(#arr)"/>
-    ${flowLbl(612,300,"save chats")}
-    ${flow("M300 440 L300 398")}${flowLbl(306,420,"distill")}
+    <!-- consolidation, one short arrow up -->
+    ${box(28,414,582,50,"Consolidation · every "+d.consolidate_every+" exchanges",d.chat_pending+"/"+d.consolidate_every*2+" queued → distilled into facts","memory")}
+    ${flow("M300 414 L300 386")}${flowLbl(310,404,"distill")}
 
-    <!-- LLM OPS: separate feedback loop -->
-    <rect class="container ops" x="660" y="26" width="268" height="360" rx="12"/>
-    ${lbl(676,46,"LLM OPS — improves the agent")}
-    ${box(676,64,236,46,"Trace",`${s.trace_files} file(s) · always on`,"ops")}
-    ${flow("M794 110 L794 132")}
-    ${box(676,132,236,46,"Eval","deterministic + judge","ops")}
-    ${flow("M794 178 L794 200")}
-    ${box(676,200,236,46,"Release gate",d.eval_report?`det ${d.eval_report.deterministic} · judge ${d.eval_report.judge}`:"run make gate","ops")}
-    ${box(676,290,236,46,"Release","new prompt · model · config","ops")}
-    ${flow("M794 246 L794 290")}
-    <path class="flow dash" d="M676 313 C500 340 300 300 210 262" marker-end="url(#arr)"/>
-    ${flowLbl(430,320,"improved prompt + config")}
+    <!-- LLM OPS: separate loop, its own vertical chain -->
+    <rect class="container ops" x="664" y="20" width="288" height="330" rx="14"/>
+    ${lbl(682,46,"LLM OPS — improves the agent")}
+    ${box(682,60,252,48,"Trace",s.trace_files+" file(s) · always on","ops")}
+    ${flow("M808 108 L808 124")}
+    ${box(682,124,252,48,"Eval","deterministic + judge","ops")}
+    ${flow("M808 172 L808 188")}
+    ${box(682,188,252,48,"Release gate",d.eval_report?"det "+d.eval_report.deterministic+" · judge "+d.eval_report.judge:"run make gate","ops")}
+    ${flow("M808 236 L808 252")}
+    ${box(682,252,252,48,"Release","new prompt · model · config","ops")}
+    <text class="fl" x="682" y="326">↩ feeds an improved prompt + config back to the Harness</text>
   </svg></div>`;
 }
 
