@@ -25,16 +25,17 @@ zero frameworks hiding the interesting parts. Built for the
 
 ```bash
 git clone https://github.com/ShenSeanChen/launch-jarvis && cd launch-jarvis
-uv venv && uv pip install -e .          # or: pip install -e .
+uv venv && uv pip install -e .          # installs the `waku` command (or: pip install -e .)
 cp .env.example .env                    # pick a provider, paste ONE key
-make run                                # talk to your Jarvis in the terminal
-make dashboard                          # …or watch it all in the browser cockpit → localhost:7777
+waku                                    # talk to your Jarvis in the terminal
+waku dashboard                          # …or the browser cockpit → localhost:7777
 ```
 
-`make run` and `make dashboard` are two doorways into the **same** local Jarvis (same
-`state.db`, same loop). `make dashboard` starts a tiny web server —
-`python -m jarvis.ops.dashboard` — on **your** machine; when you chat in the browser,
-*that process* runs the turn. Nothing leaves your laptop, and it's bound to `127.0.0.1`.
+`waku` and `waku dashboard` are two doorways into the **same** local Jarvis (same
+`state.db`, same loop). `waku dashboard` starts a tiny web server on **your** machine; when
+you chat in the browser, *that process* runs the turn — nothing leaves your laptop (bound to
+`127.0.0.1`). If `TELEGRAM_BOT_TOKEN` is set, `waku dashboard` also starts your Telegram bot in
+the background, so one command runs every gateway. (`make run` / `make dashboard` still work too.)
 
 Try: *"Remember that Alex prefers morning meetings."* Quit. Restart.
 *"Book a catch-up with Alex on Friday."* — it remembers, and it books 9am.
@@ -47,7 +48,7 @@ The loop speaks one dialect; a [~60-line adapter](jarvis/loop/models.py) covers 
 ## Watch the harness run — the dashboard
 
 ```bash
-make dashboard          # starts a local server → http://localhost:7777
+waku dashboard          # starts a local server → http://localhost:7777
 ```
 
 This runs a small stdlib web server *you* own (`python -m jarvis.ops.dashboard`, bound to
@@ -364,13 +365,15 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Every command
 
+The `waku` command is installed with the package; the `make` targets are equivalent aliases.
+
 | Command | Does |
 |---|---|
-| `make run` | chat in the terminal |
-| `make dashboard` | the live cockpit at localhost:7777 |
-| `make voice` | talk to it (push-to-talk or wake word) |
-| `make telegram` | message it from your phone |
-| `make brief` | morning briefing from Calendar + Mail + memory |
+| `waku` | chat in the terminal |
+| `waku dashboard` | the live cockpit at localhost:7777 (+ Telegram if `TELEGRAM_BOT_TOKEN` is set) |
+| `waku voice` | talk to it (push-to-talk or wake word) |
+| `waku telegram` | message it from your phone (standalone) |
+| `waku brief` | morning briefing from Calendar + Mail + memory |
 | `make trace` | deep trace waterfalls (Phoenix) at localhost:6006 |
 | `make eval` | deterministic evals (0/1, no judge) |
 | `make eval-judge` | LLM-as-judge evals (scored %) |

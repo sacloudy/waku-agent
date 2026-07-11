@@ -13,6 +13,10 @@ dependencies = [
     "rich>=13.0",
 ]
 
+[project.scripts]
+# Branded CLI: `waku dashboard`, `waku voice`, `waku` to chat, etc.
+waku = "jarvis.__main__:main"
+
 [project.optional-dependencies]
 # Eval pillar: LLM-as-judge (deterministic evals need only pytest)
 eval = [

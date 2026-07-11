@@ -1,10 +1,11 @@
-"""Entrypoints:
+"""Entrypoints — installed as the `waku` command (and `python -m jarvis`):
 
-  python -m jarvis                       chat in the terminal (default)
-  python -m jarvis voice                 talk to it (needs the [voice] extra)
-  python -m jarvis telegram              phone → laptop (needs TELEGRAM_BOT_TOKEN)
-  python -m jarvis brief                 morning briefing (calendar + mail + memory)
-  python -m jarvis skill install <url>   install a community skill
+  waku                       chat in the terminal (default)
+  waku dashboard             the browser cockpit → localhost:7777 (+ Telegram if configured)
+  waku voice                 talk to it (needs the [voice] extra)
+  waku telegram              phone → laptop (needs TELEGRAM_BOT_TOKEN)
+  waku brief                 morning briefing (calendar + mail + memory)
+  waku skill install <url>   install a community skill
 """
 
 from __future__ import annotations
@@ -18,6 +19,10 @@ def main() -> None:
         from jarvis.gateway.cli import main as cli_main
 
         cli_main()
+    elif args[0] == "dashboard":
+        from jarvis.ops.dashboard import main as dash_main
+
+        dash_main()
     elif args[0] == "voice":
         from jarvis.gateway.voice import main as voice_main
 

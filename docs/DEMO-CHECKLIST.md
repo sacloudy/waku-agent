@@ -8,7 +8,7 @@ proves, where to look, and whether it's been dry-run verified. Keep this updated
 - [x] Provider = `anthropic` (best streaming; Gemini breaks multi-turn tool use) — Settings
 - [x] Free `TAVILY_API_KEY` pasted on the Settings page (for the World Cup beat)
 - [x] Clean curated state — `python scripts/demo_seed.py` (keeps traces + `usage.jsonl` spend)
-- [x] `make dashboard` running on your own machine → `localhost:7777` in a real browser
+- [x] `waku dashboard` running on your own machine (also starts Telegram if a token is set) → `localhost:7777` in a real browser
 
 ## The beats
 

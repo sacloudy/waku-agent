@@ -812,6 +812,15 @@ def main() -> None:
         except OSError:
             print(f"port {port} busy, trying {port + 1}…")
             continue
+        # One command, many gateways: if a Telegram token is set, run the bot
+        # too (background thread) so you don't need a separate `waku telegram`.
+        try:
+            from jarvis.gateway.telegram import start_in_background
+
+            if start_in_background():
+                print("Telegram gateway → listening in the background (phone messages land here too)")
+        except Exception as exc:  # noqa: BLE001 — never let a gateway block the dashboard
+            print(f"(telegram) not started: {exc}")
         print(f"Jarvis dashboard → http://localhost:{port}  (Ctrl-C to stop)")
         server.serve_forever()
         return
