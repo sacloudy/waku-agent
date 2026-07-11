@@ -1,6 +1,6 @@
 # launch-jarvis
 
-**Your own Jarvis, on your own laptop, in code you can read in an afternoon.**
+**Your own Waku, on your own laptop, in code you can read in an afternoon.**
 
 A minimal, transparent, local-first personal AI assistant that demonstrates the four
 pillars of every serious agent system — **Harness, Loop, Memory, Eval/LLM-Ops** — with
@@ -27,11 +27,11 @@ zero frameworks hiding the interesting parts. Built for the
 git clone https://github.com/ShenSeanChen/launch-jarvis && cd launch-jarvis
 uv venv && uv pip install -e .          # installs the `waku` command (or: pip install -e .)
 cp .env.example .env                    # pick a provider, paste ONE key
-waku                                    # talk to your Jarvis in the terminal
+waku                                    # talk to your Waku in the terminal
 waku dashboard                          # …or the browser cockpit → localhost:7777
 ```
 
-`waku` and `waku dashboard` are two doorways into the **same** local Jarvis (same
+`waku` and `waku dashboard` are two doorways into the **same** local Waku (same
 `state.db`, same loop). `waku dashboard` starts a tiny web server on **your** machine; when
 you chat in the browser, *that process* runs the turn — nothing leaves your laptop (bound to
 `127.0.0.1`). If `TELEGRAM_BOT_TOKEN` is set, `waku dashboard` also starts your Telegram bot in
@@ -150,7 +150,7 @@ Every box is one module (full version with every file path: [docs/architecture.m
 | Gate → Release | [`jarvis/ops/release_gate.py`](jarvis/ops/release_gate.py) |
 
 **A note on `MEMORY.md` vs `state.db`.** Some assistants (e.g. Hermes) keep long-term memory as a
-single `MEMORY.md` markdown file. Jarvis keeps the *queryable* source in `state.db` (the `facts` and
+single `MEMORY.md` markdown file. Waku keeps the *queryable* source in `state.db` (the `facts` and
 `episodes` tables, keyword-searchable via FTS5) **and** regenerates a human-readable
 `.jarvis/MEMORY.md` mirror after every turn — so you get both: a real file you can open, backed by a
 sturdy database. The dashboard's **Memory** tab is the friendly view; the **Database** tab shows the
@@ -306,7 +306,7 @@ public URL or webhook. Set `TELEGRAM_ALLOWED_USER` to lock it to just you.
 JARVIS_APPLE_TOOLS=1 make brief      # macOS; grant the permission prompts once
 ```
 
-Jarvis reads your **real** Calendar.app (including events invited by email) and
+Waku reads your **real** Calendar.app (including events invited by email) and
 recent Apple Mail, cross-references your memory, and writes a focus-first briefing
 with clickable `message://` links. Cron it for a morning greeting:
 
@@ -349,7 +349,7 @@ cp examples/mcp.demo.json .jarvis/mcp.json   # points at examples/mcp_demo_serve
 make dashboard                               # demo_word_count / demo_reverse_text appear in Tools
 ```
 
-Same pattern scales to any server, yours or a vendor's — no changes to Jarvis's code.
+Same pattern scales to any server, yours or a vendor's — no changes to Waku's code.
 
 ## Add skills — yours or the community's
 

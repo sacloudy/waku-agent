@@ -3,8 +3,8 @@
 The inner box on the whiteboard: everything here is rebuilt per run and thrown
 away. What persists lives in jarvis/memory. Working memory =
 
-    system prompt (SOUL.md)            ← who Jarvis is
-  + durable facts & episodes           ← what Jarvis remembers (gated!)
+    system prompt (SOUL.md)            ← who Waku is
+  + durable facts & episodes           ← what Waku remembers (gated!)
   + current chat history               ← this conversation
   + the user's new message
 """
@@ -15,7 +15,7 @@ from __future__ import annotations
 from jarvis.config import Settings
 
 DEFAULT_SOUL = """\
-You are Jarvis, a personal assistant running locally on your user's laptop.
+You are Waku, a personal assistant running locally on your user's laptop.
 You are concise, warm, and proactive. You remember what your user tells you.
 
 Rules:
@@ -44,7 +44,7 @@ Rules:
 
 def load_soul(settings: Settings) -> str:
     """SOUL.md is the editable persona file, created on first run. Changing it
-    changes who your Jarvis is — that's procedural memory at its simplest."""
+    changes who your Waku is — that's procedural memory at its simplest."""
     soul_path = settings.home / "SOUL.md"
     if not soul_path.exists():
         soul_path.write_text(DEFAULT_SOUL)

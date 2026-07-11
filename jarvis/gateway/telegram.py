@@ -4,7 +4,7 @@ Setup (2 minutes, free):
   1. In Telegram, message @BotFather → /newbot → copy the token
   2. Put TELEGRAM_BOT_TOKEN=... in .env
   3. Optionally set TELEGRAM_ALLOWED_USER=<your numeric id> (message
-     @userinfobot to get it) so ONLY you can talk to your Jarvis
+     @userinfobot to get it) so ONLY you can talk to your Waku
   4. make telegram
 
 Long-polling: your laptop calls Telegram's API — no public URL, no webhook,
@@ -30,11 +30,11 @@ def _build_app(token: str, allowed: str):
 
     async def handle(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         if allowed and str(update.effective_user.id) != allowed:
-            await update.message.reply_text("This Jarvis serves someone else. Run your own!")
+            await update.message.reply_text("This Waku serves someone else. Run your own!")
             return
         print(f"you › {update.message.text}")
         result = jarvis.respond(update.message.text, observer=_observer, source="telegram")
-        print(f"jarvis › {result.reply}")
+        print(f"waku › {result.reply}")
         await update.message.reply_text(result.reply or "(no reply)")
 
     app = Application.builder().token(token).build()
@@ -54,7 +54,7 @@ def main() -> None:
     if not token:
         raise SystemExit("Set TELEGRAM_BOT_TOKEN in .env (message @BotFather to create a bot).")
     app = _build_app(token, os.getenv("TELEGRAM_ALLOWED_USER", ""))
-    print("Jarvis is listening on Telegram — message your bot. Ctrl-C to stop.")
+    print("Waku is listening on Telegram — message your bot. Ctrl-C to stop.")
     app.run_polling()
 
 

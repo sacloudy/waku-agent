@@ -2,7 +2,7 @@
 
     make dashboard        # → http://localhost:7777
 
-One stdlib HTTP server reading the files Jarvis already writes:
+One stdlib HTTP server reading the files Waku already writes:
   loop + harness   traces/*.jsonl   (turns, gate decisions, tool calls, tokens)
   memory           state.db         (facts, episodes, chat log, consolidation)
   tools            state.db + calendar.ics + outbox/
@@ -555,7 +555,7 @@ def reveal_path(rel: str) -> dict:
     home = settings.home.resolve()
     target = (home / (rel or ".")).resolve()
     if target != home and home not in target.parents:
-        return {"error": "path is outside the Jarvis home"}
+        return {"error": "path is outside the .jarvis home"}
     if not target.exists():
         return {"error": f"not found: {target}"}
 
@@ -821,7 +821,7 @@ def main() -> None:
                 print("Telegram gateway → listening in the background (phone messages land here too)")
         except Exception as exc:  # noqa: BLE001 — never let a gateway block the dashboard
             print(f"(telegram) not started: {exc}")
-        print(f"Jarvis dashboard → http://localhost:{port}  (Ctrl-C to stop)")
+        print(f"Waku dashboard → http://localhost:{port}  (Ctrl-C to stop)")
         server.serve_forever()
         return
     raise SystemExit(f"no free port in {base}–{base + 9}")

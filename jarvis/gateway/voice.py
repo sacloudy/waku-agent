@@ -160,7 +160,7 @@ def wake_loop(jarvis: Jarvis, mouth: "Mouth", wake_word: str) -> None:
       re-opens the device every 2.5s and can block forever when macOS audio
       routing changes (say/AirPods/etc).
     - The scanner always shows a heartbeat, so "listening" never looks "dead".
-    - The mic buffer is drained after Jarvis speaks, so it doesn't wake on
+    - The mic buffer is drained after Waku speaks, so it doesn't wake on
       the tail of its own voice (the "mm-hmm" self-trigger in the trace).
     """
     import numpy as np
@@ -214,7 +214,7 @@ def wake_loop(jarvis: Jarvis, mouth: "Mouth", wake_word: str) -> None:
                 continue
             print(f"you › {heard}")
             result = jarvis.respond(heard, observer=_observer, source="voice")
-            print(f"jarvis › {result.reply}")
+            print(f"waku › {result.reply}")
             mouth.speak(result.reply)
             drain()  # ...and don't wake on the tail of the reply
             window = []
@@ -240,7 +240,7 @@ def main() -> None:
         return
 
     ears = Ears()
-    print("Voice Jarvis ready. Press Enter to talk, Ctrl-C to quit.")
+    print("Voice Waku ready. Press Enter to talk, Ctrl-C to quit.")
     while True:
         try:
             input("\npress Enter to talk… ")
@@ -258,7 +258,7 @@ def main() -> None:
         print(f"you › {heard}")
 
         result = jarvis.respond(heard, observer=_observer, source="voice")
-        print(f"jarvis › {result.reply}")
+        print(f"waku › {result.reply}")
         mouth.speak(result.reply)
 
     print("bye — your memory stays in state.db")

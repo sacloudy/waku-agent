@@ -1,4 +1,4 @@
-"""CLI gateway — the zero-setup way to talk to your Jarvis.
+"""CLI gateway — the zero-setup way to talk to your Waku.
 
 The Gateway Interface box: a gateway only moves text in and out; everything
 interesting happens in the loop. The Telegram gateway is the same ~60 lines
@@ -28,7 +28,7 @@ def _observer(kind: str, event: dict) -> None:
 def main() -> None:
     jarvis = Jarvis()
     console.print(Panel.fit(
-        "[bold]Jarvis[/bold] — local, yours, transparent.\n"
+        "[bold]Waku[/bold] — local, yours, transparent.\n"
         f"home: {jarvis.settings.home.resolve()}   model: {jarvis.settings.model}\n"
         "Ctrl-D or /quit to exit.",
         border_style="cyan",
@@ -43,7 +43,7 @@ def main() -> None:
         if user_message in ("/quit", "/exit"):
             break
         result = jarvis.respond(user_message, observer=_observer, source="cli")
-        console.print(f"[bold green]jarvis ›[/bold green] {result.reply}\n")
+        console.print(f"[bold green]waku ›[/bold green] {result.reply}\n")
     console.print("[dim]bye — your memory stays in state.db[/dim]")
 
 

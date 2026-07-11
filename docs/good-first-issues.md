@@ -17,7 +17,7 @@ implementation to imitate, and a way to verify.
 4. **Notion episodic adapter** — `jarvis/memory/episodic/notion_store.py` with the
    same `add`/`search`/`recent` interface. Reference: `SqliteEpisodeStore`.
 
-5. **`/memory` CLI command** — in the REPL, show what Jarvis knows: facts, episodes,
+5. **`/memory` CLI command** — in the REPL, show what Waku knows: facts, episodes,
    and unconsolidated chat count. Pure SQLite reads; great for demos.
 
 6. **Trace pretty-printer** — `python -m jarvis.ops.show_trace [file]` renders a

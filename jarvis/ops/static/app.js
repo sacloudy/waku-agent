@@ -125,7 +125,7 @@ const streamingCard = m => `<div class="card">
 
 function renderChatLog(){
   if (!CHAT.length)
-    return `<div class="empty" style="padding:6px 2px">Message Jarvis here from any tab. Open Overview to watch it flow through the harness, or the Gateway tab to see every channel's messages together.</div>`;
+    return `<div class="empty" style="padding:6px 2px">Message Waku here from any tab. Open Overview to watch it flow through the harness, or the Gateway tab to see every channel's messages together.</div>`;
   return CHAT.map(m => m.role==="user"
       ? `<div class="bubble">${esc(m.text)}</div>`
       : m.pending ? streamingCard(m)
@@ -397,11 +397,11 @@ function memOverview(d){
       <b>${t} <span class="meta" style="font-weight:400">· ${n}</span></b><span>${desc}</span></div>`).join("");
   return `<div class="card" style="border-color:var(--accent);background:var(--accent-soft)">
       <b>Memory vs Database — two views of one file.</b>
-      <div class="r">This tab is the curated, per-pillar view of what Jarvis remembers. The
+      <div class="r">This tab is the curated, per-pillar view of what Waku remembers. The
       <a class="reveal" onclick="location.hash='database'">Database tab</a> shows the exact same
       thing as raw SQLite tables (plus the FTS5 keyword index). Same
       <code>.jarvis/state.db</code> — different altitude.
-      <br><br>Some assistants (Hermes) keep memory as a single <code>MEMORY.md</code> file. Jarvis keeps
+      <br><br>Some assistants (Hermes) keep memory as a single <code>MEMORY.md</code> file. Waku keeps
       the queryable source in <code>state.db</code> (facts + episodes, FTS5-searchable) <b>and</b> writes a
       human-readable ${reveal("MEMORY.md","MEMORY.md")} mirror after every turn — so you get both: a real file
       you can open, backed by a sturdy database.</div></div>
@@ -414,7 +414,7 @@ function memOverview(d){
     <div class="meta" style="margin-top:14px">Files: ${reveal("state.db","state.db")} · ${reveal("MEMORY.md","MEMORY.md")} · ${reveal("SOUL.md","SOUL.md")} · ${reveal("skills","skills/")}</div>`;
 }
 function memSemantic(d){
-  let h = `<div class="meta" style="margin-bottom:12px">Durable facts distilled from what you tell Jarvis —
+  let h = `<div class="meta" style="margin-bottom:12px">Durable facts distilled from what you tell Waku —
     the smallest, most-reused store. Edit or forget any of them; changes are live next turn.</div>`;
   h += `<div class="card" style="padding:4px 8px"><table><tr><th>subject</th><th>fact</th><th>source</th><th></th></tr>${
     d.facts.map(f => `<tr id="fact-${f.id}">
@@ -438,7 +438,7 @@ function memEpisodic(d){
 }
 function memSkills(d){
   let h = `<div class="meta" style="margin-bottom:12px">Procedural memory — markdown instructions loaded
-    only when a message matches. Add your own three ways: teach Jarvis in chat (it calls
+    only when a message matches. Add your own three ways: teach Waku in chat (it calls
     <code>create_skill</code>), edit a skill below, or drop a <code>SKILL.md</code> into ${reveal("skills","the skills folder")}.</div>`;
   h += d.skills.map((sk,i) => {
     const full = `---
@@ -458,8 +458,8 @@ ${sk.body}`;
   return h;
 }
 function memSoul(d){
-  return `<div class="meta" style="margin-bottom:12px">SOUL.md is Jarvis's persona — the system prompt it
-    loads every turn. Editing it changes who your Jarvis is. Changes are live next turn.</div>
+  return `<div class="meta" style="margin-bottom:12px">SOUL.md is Waku's persona — the system prompt it
+    loads every turn. Editing it changes who your Waku is. Changes are live next turn.</div>
     <div class="card"><textarea id="soul" class="editor" style="min-height:260px"
       oninput="dirty('soul-save')" onfocus="markEditing()">${esc(d.soul||"")}</textarea>
     <div style="margin-top:8px"><button class="save" id="soul-save" disabled onclick="saveSoul()">Save SOUL.md</button>
@@ -504,7 +504,7 @@ function toolsMCP(t){
   const m = t.mcp;
   let h = `<div class="card ${m.configured?"":""}" style="border-color:${m.live?"var(--good)":"var(--line2)"}">
     <b>Model Context Protocol${m.live?" — connected":m.configured?" — configured":" — not set up"}.</b>
-    <div class="r">MCP lets Jarvis borrow tools from any external server (files, GitHub, a database, …),
+    <div class="r">MCP lets Waku borrow tools from any external server (files, GitHub, a database, …),
     namespaced <code>&lt;server&gt;_&lt;tool&gt;</code>. ${m.configured
       ? `Configured servers: ${m.servers.map(s=>`<code>${esc(s)}</code>`).join(" ")}${m.live?"":" — start a chat to connect them."}`
       : "None configured yet."}</div></div>`;
@@ -518,7 +518,7 @@ function toolsMCP(t){
     <div class="meta" style="margin-top:8px">3 — restart the dashboard. The server's tools appear above under
       <a class="reveal" onclick="location.hash='tools/available'">Available ▸ MCP servers</a>, callable in chat.</div></div>`;
   h += `<div class="meta" style="margin-top:12px">The same pattern scales: any MCP server (yours or a vendor's)
-    plugs in the same way — no code changes to Jarvis. Skills work the same way — drop a <code>SKILL.md</code>
+    plugs in the same way — no code changes to Waku. Skills work the same way — drop a <code>SKILL.md</code>
     in ${reveal("skills","skills/")}.</div>`;
   return h;
 }
@@ -557,7 +557,7 @@ const VIEWS = {
     <h2>Retrieval gate — the hero decision</h2>${gateSplit(s)}
     <h2 style="margin-top:26px">Architecture — click any box <span class="arch-status"></span></h2>
     ${archSVG(d)}
-    <h2>Latest turn</h2>${d.turns.length?turnCard(d.turns[0]):'<div class="card empty">no turns yet — talk to Jarvis first</div>'}`;
+    <h2>Latest turn</h2>${d.turns.length?turnCard(d.turns[0]):'<div class="card empty">no turns yet — talk to Waku first</div>'}`;
   },
   loop(d){
     return d.turns.length ? d.turns.map(turnCard).join("") : `<div class="card empty">no turns yet</div>`;
@@ -657,7 +657,7 @@ const VIEWS = {
       <b>Database vs Memory.</b> <span class="r">This is the raw persistence layer — the literal SQLite
       tables. The <a class="reveal" onclick="location.hash='memory'">Memory tab</a> is the friendly
       view of the same rows (facts, episodes, skills, persona). One file, two altitudes. Where Hermes
-      uses a <code>MEMORY.md</code> file, Jarvis uses these queryable tables — and mirrors them to a
+      uses a <code>MEMORY.md</code> file, Waku uses these queryable tables — and mirrors them to a
       readable <code>MEMORY.md</code> too.</span></div>`;
     h += `<div class="card">
       <div class="u" style="font-family:var(--mono);font-size:12.5px;word-break:break-all">${esc(db.path)}</div>
@@ -743,7 +743,7 @@ const VIEWS = {
     h += (d.trace_tail||[]).length ? table(["event","detail","when"], d.trace_tail.map(e =>
         `<tr><td><code>${esc(e.type)}</code></td><td class="meta">${esc(String(e.detail).slice(0,60))}</td>
           <td class="meta">${esc((e.ts||"").replace("T"," ").slice(0,19))}</td></tr>`))
-      : `<div class="card empty">no trace lines yet — talk to Jarvis</div>`;
+      : `<div class="card empty">no trace lines yet — talk to Waku</div>`;
     h += `<div class="meta" style="margin-top:8px">Span waterfalls: <code>make trace</code> + <code>OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317</code>.</div>`;
 
     if (d.wake_scans.length){
@@ -804,7 +804,7 @@ async function pollEvents(){
 
 let activeView = null, activeSub = null;
 const TITLES = {chat:"Chat & watch", ops:"LLM Ops",
-                database:"Database — everything Jarvis stores (state.db)"};
+                database:"Database — everything Waku stores (state.db)"};
 function render(){
   if (!D) return;
   const [v, subRaw] = (location.hash||"#overview").slice(1).split("/");
@@ -883,7 +883,7 @@ let mediaRec = null, audioChunks = [];
 async function toggleMic(){
   const btn = document.getElementById("mic"), input = document.getElementById("dmsg");
   if (mediaRec && mediaRec.state === "recording"){ mediaRec.stop(); return; }
-  const hint = (msg) => { input.placeholder = msg; setTimeout(()=>{ input.placeholder="Message Jarvis…"; }, 8000); };
+  const hint = (msg) => { input.placeholder = msg; setTimeout(()=>{ input.placeholder="Message Waku…"; }, 8000); };
   // The mic API only exists in a normal, secure browser tab — not in IDE/embedded
   // webviews (the common gotcha). Say so instead of failing silently.
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
