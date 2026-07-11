@@ -18,6 +18,7 @@ Bound to 127.0.0.1 only. For deep trace waterfalls use Phoenix (`make trace`).
 from __future__ import annotations
 
 import json
+import os
 import threading
 from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -231,10 +232,23 @@ def collect() -> dict:
     }
 
 
+def _editor_cmd() -> list[str] | None:
+    """The user's code editor CLI: $JARVIS_EDITOR, then cursor, then code."""
+    import shutil
+
+    custom = os.getenv("JARVIS_EDITOR")
+    if custom and shutil.which(custom):
+        return [custom]
+    for cli in ("cursor", "code"):
+        if shutil.which(cli):
+            return [cli]
+    return None
+
+
 def reveal_path(rel: str) -> dict:
-    """Reveal a file/folder under JARVIS_HOME in the OS file browser, so the
-    dashboard can link straight to the real local files (memories, db, traces).
-    Restricted to paths inside JARVIS_HOME; macOS-only (uses `open`)."""
+    """Open a file/folder under JARVIS_HOME — in the user's code editor if one
+    is on PATH (cursor/code/$JARVIS_EDITOR), otherwise reveal in Finder.
+    Restricted to paths inside JARVIS_HOME."""
     import subprocess
     import sys
 
@@ -246,8 +260,13 @@ def reveal_path(rel: str) -> dict:
         return {"error": "path is outside the Jarvis home"}
     if not target.exists():
         return {"error": f"not found: {target}"}
+
+    editor = _editor_cmd()
+    if editor and target.is_file() and target.suffix != ".db":  # editors choke on sqlite
+        subprocess.run([*editor, str(target)], check=False)
+        return {"ok": True, "opened_in": editor[0], "path": str(target)}
     if sys.platform != "darwin":
-        return {"error": f"reveal is macOS-only — the path is {target}"}
+        return {"error": f"no editor found and reveal is macOS-only — the path is {target}"}
     subprocess.run(
         ["open", "-R", str(target)] if target.is_file() else ["open", str(target)],
         check=False,
@@ -309,9 +328,11 @@ PAGE = """<!doctype html><html><head><meta charset="utf-8">
   nav .n{font-size:11px;color:var(--ink3);font-variant-numeric:tabular-nums}
   nav .grp{font-size:10.5px;text-transform:uppercase;letter-spacing:.09em;color:var(--ink3);
            padding:16px 10px 4px}
-  main{flex:1;padding:32px 40px;max-width:960px}
+  main{flex:1;padding:0 40px 32px;max-width:960px}
+  .pagehead{position:sticky;top:0;z-index:6;background:var(--bg);padding:28px 0 10px;
+            border-bottom:1px solid var(--line);margin-bottom:18px}
   h1{font-size:17px;font-weight:600;margin-bottom:2px}
-  .sub{color:var(--ink3);font-size:12px;margin-bottom:24px;font-family:var(--mono)}
+  .sub{color:var(--ink3);font-size:12px;font-family:var(--mono)}
   h2{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--ink2);
      font-weight:600;margin:28px 0 10px}
   .tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:10px}
@@ -406,13 +427,32 @@ PAGE = """<!doctype html><html><head><meta charset="utf-8">
   .reveal:hover{border-bottom-style:solid}
   .watchhead{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--ink2);font-weight:600;margin-bottom:8px}
   .chat-arch{max-width:600px;margin:0 auto 16px;border:1px solid var(--line);border-radius:12px;
-             padding:8px;background:var(--panel);position:sticky;top:6px;z-index:3}
+             padding:8px;background:var(--panel);position:sticky;top:96px;z-index:3}
   .chat-arch svg{min-width:0;width:100%;height:auto}
-  .chatlog{display:flex;flex-direction:column;gap:10px;margin-bottom:96px}
+  .chatlog{display:flex;flex-direction:column;gap:10px}
   .bubble{align-self:flex-end;background:var(--accent);color:#fff;padding:8px 13px;
           border-radius:14px 14px 3px 14px;max-width:75%;font-size:13.5px}
-  .chatbar{position:fixed;bottom:0;left:208px;right:0;background:var(--bg);
-           border-top:1px solid var(--line);padding:14px 40px;display:flex;gap:10px;max-width:1000px}
+  .chatbar{display:flex;gap:10px;padding:12px 0;border-top:1px solid var(--line);
+           background:var(--bg);position:sticky;bottom:0}
+  /* the chat side-dock: chat from any tab, watch the harness in main */
+  #dock{width:380px;flex-shrink:0;border-left:1px solid var(--line);position:sticky;top:0;
+        height:100vh;display:flex;flex-direction:column;background:var(--bg);padding:0 14px}
+  .dockhead{display:flex;align-items:center;gap:10px;padding:18px 2px 10px;
+            border-bottom:1px solid var(--line)}
+  .dockhead .dt{font-weight:650;font-size:14px}
+  .dockhead .arch-status{flex:1}
+  #dock-close{background:none;border:1px solid var(--line2);border-radius:6px;color:var(--ink2);
+              width:24px;height:24px;cursor:pointer;font-size:14px;line-height:1}
+  #dock .chatlog{flex:1;overflow-y:auto;padding:12px 2px}
+  #dock .chatbar{padding:12px 0 16px}
+  #dock-reopen{display:none;position:fixed;bottom:16px;right:16px;z-index:20;
+               background:var(--accent);color:#fff;border:none;border-radius:99px;
+               padding:9px 16px;font-weight:600;font-size:13px;cursor:pointer;
+               box-shadow:0 2px 10px rgba(0,0,0,.25)}
+  body.dock-closed #dock{display:none}
+  body.dock-closed #dock-reopen{display:block}
+  body.dock-hidden #dock{display:none}
+  body.dock-hidden #dock-reopen{display:none}
   .chatbar input{flex:1;background:var(--panel);border:1px solid var(--line2);border-radius:8px;
                  padding:10px 14px;color:var(--ink);font-size:14px;outline:none}
   .chatbar input:focus{border-color:var(--accent)}
@@ -445,10 +485,25 @@ PAGE = """<!doctype html><html><head><meta charset="utf-8">
   <a href="#ops" data-v="ops">Ops <span class="n" id="n-ops"></span></a>
 </nav>
 <main>
-  <h1 id="title">Overview</h1>
-  <div class="sub" id="sub"></div>
+  <header class="pagehead">
+    <h1 id="title">Overview</h1>
+    <div class="sub" id="sub"></div>
+  </header>
   <div id="view"></div>
 </main>
+<aside id="dock">
+  <div class="dockhead">
+    <span class="dt">Chat</span>
+    <span class="arch-status"></span>
+    <button id="dock-close" title="Collapse chat">&rsaquo;</button>
+  </div>
+  <div class="chatlog" id="docklog"></div>
+  <div class="chatbar">
+    <input id="dmsg" placeholder="Message Jarvis&hellip;" autocomplete="off">
+    <button id="dsend">Send</button>
+  </div>
+</aside>
+<button id="dock-reopen" title="Open chat">&lsaquo; Chat</button>
 <script>
 const esc = s => (s??"").toString().replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
 let D = null;
@@ -518,7 +573,7 @@ function chatView(){
   // one place. It's built once; sendChat only re-renders the conversation, so
   // the SVG persists and the trace-event animation plays on it uninterrupted.
   return `
-    <div class="watchhead">Live harness — your message flows through this <span id="arch-status" class="arch-status"></span></div>
+    <div class="watchhead">Live harness — your message flows through this <span class="arch-status"></span></div>
     <div class="chat-arch">${archSVG(D)}</div>
     <div class="chatlog" id="chatlog">${renderChatLog()}</div>
     <div class="chatbar">
@@ -527,30 +582,50 @@ function chatView(){
     </div>`;
 }
 
-async function sendChat(){
-  const input = document.getElementById("msg");
-  const text = (input.value||"").trim();
+function syncChatLogs(){
+  // one conversation, two surfaces: the Chat & watch tab and the side dock
+  document.querySelectorAll(".chatlog").forEach(el => {
+    el.innerHTML = renderChatLog();
+    el.scrollTop = el.scrollHeight;      // dock scrolls its own container
+  });
+  if ((location.hash||"#chat") === "#chat")
+    window.scrollTo({top:0, behavior:"smooth"});  // tab: keep the diagram in view
+}
+
+async function sendChat(fromInput){
+  const input = fromInput || document.getElementById("msg") || document.getElementById("dmsg");
+  const text = (input && input.value || "").trim();
   if (!text) return;
   input.value = "";
   CHAT.push({role:"user", text});
   const pending = {role:"jarvis", pending:true};
   CHAT.push(pending);
-  document.getElementById("chatlog").innerHTML = renderChatLog();  // only the log — keep the diagram animating
-  scrollChat();
+  syncChatLogs();
   try {
     const res = await (await fetch("/api/chat", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({message:text})})).json();
     Object.assign(pending, {pending:false}, res.error ? {reply:"Error: "+res.error} : res);
   } catch(e){ Object.assign(pending, {pending:false, reply:"Error: "+e}); }
-  document.getElementById("chatlog").innerHTML = renderChatLog();
-  scrollChat();
+  syncChatLogs();
   input.focus();
 }
 function wireChat(){
   const b = document.getElementById("send"), i = document.getElementById("msg");
-  if (b) b.onclick = sendChat;
-  if (i){ i.focus(); i.onkeydown = e => { if (e.key==="Enter") sendChat(); }; }
+  if (b) b.onclick = () => sendChat(i);
+  if (i){ i.focus(); i.onkeydown = e => { if (e.key==="Enter") sendChat(i); }; }
+  syncChatLogs();
 }
-function scrollChat(){ window.scrollTo({top:0, behavior:"smooth"}); }  // keep the diagram in view to watch it animate
+function wireDock(){
+  const b = document.getElementById("dsend"), i = document.getElementById("dmsg");
+  if (b) b.onclick = () => sendChat(i);
+  if (i) i.onkeydown = e => { if (e.key==="Enter") sendChat(i); };
+  const close = document.getElementById("dock-close"), reopen = document.getElementById("dock-reopen");
+  const setClosed = v => { document.body.classList.toggle("dock-closed", v); localStorage.setItem("dockClosed", v?"1":"0"); };
+  if (close) close.onclick = () => setClosed(true);
+  if (reopen) reopen.onclick = () => setClosed(false);
+  const saved = localStorage.getItem("dockClosed");
+  setClosed(saved === null ? window.innerWidth < 1180 : saved === "1");
+  syncChatLogs();
+}
 
 // --- Architecture: a calm live SVG that mirrors the whiteboard's structure
 // (Harness wraps the ephemeral run · Loop is a cycle · memory feeds up through
@@ -559,22 +634,23 @@ function scrollChat(){ window.scrollTo({top:0, behavior:"smooth"}); }  // keep t
 function archSVG(d){
   const s = d.stats;
   const box = (x,y,w,h,title,sub,view,cls="",nid="") =>
-    `<g class="node ${cls}" ${nid?`id="n-${nid}"`:""} ${view?`onclick="location.hash='${view}'"`:""}>
+    `<g class="node ${cls}" ${nid?`data-node="${nid}"`:""} ${view?`onclick="location.hash='${view}'"`:""}>
        <rect class="bx" x="${x}" y="${y}" width="${w}" height="${h}" rx="9"/>
        <text class="nt" x="${x+13}" y="${y+24}">${title}</text>
        ${sub?`<text class="ns" x="${x+13}" y="${y+42}">${sub}</text>`:""}
      </g>`;
   const lbl = (x,y,t) => `<text class="grp" x="${x}" y="${y}">${t}</text>`;
-  const flow = (d2,cls="",id="") => `<path class="flow ${cls}" ${id?`id="${id}"`:""} d="${d2}"/>`;
+  const flow = (d2,cls="",eid="") => `<path class="flow ${cls}" ${eid?`data-edge="${eid}"`:""} d="${d2}"/>`;
   const flowLbl = (x,y,t,anchor="start") => `<text class="fl" x="${x}" y="${y}" text-anchor="${anchor}">${t}</text>`;
 
   return `<div style="overflow-x:auto"><svg viewBox="0 0 1044 664" class="arch" role="img">
     <defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path d="M0 0 L10 5 L0 10 z" class="head"/></marker></defs>
 
-    <!-- HARNESS container -->
-    <rect class="container" x="12" y="20" width="662" height="628" rx="16"/>
-    ${lbl(32,48,"HARNESS — one ephemeral turn")}
+    <!-- HARNESS container: everything runs on your laptop, including the
+         offline LLM Ops loop (tinted sub-panel) -->
+    <rect class="container" x="12" y="20" width="1020" height="628" rx="16"/>
+    ${lbl(32,48,"HARNESS — runs on your laptop · the turn inside is ephemeral")}
 
     <!-- the turn: gateway → working memory → loop → reply -->
     ${box(32,72,128,56,"Gateway","cli · voice · web","chat","","gateway")}
@@ -591,15 +667,15 @@ function archSVG(d){
     ${flow("M538 100 L558 106")}${flowLbl(542,93,"reply")}
     ${box(558,84,104,52,"Reply","→ back to you","loop","","reply")}
     <!-- reply loops back to the gateway (next turn), arced well clear of the loop -->
-    <path class="flow" id="e-reply-gw" d="M610 84 C610 28 360 28 96 66" marker-end="url(#arr)"/>
+    <path class="flow" data-edge="e-reply-gw" d="M610 84 C610 28 360 28 96 66" marker-end="url(#arr)"/>
     ${flowLbl(376,24,"next turn")}
     <!-- every turn is saved for consolidation: down a clear right lane,
          then left into the consolidation box -->
-    <path class="flow dash" id="e-reply-save" d="M650 136 C660 150 660 200 660 600 L614 600" marker-end="url(#arr)"/>
+    <path class="flow dash" data-edge="e-reply-save" d="M650 136 C660 150 660 200 660 600 L614 600" marker-end="url(#arr)"/>
     ${flowLbl(668,214,"save chats",'start')}
 
     <!-- retrieval gate feeding working memory (the hero) -->
-    <path class="gate" id="n-gate" d="M264 250 L340 296 L264 342 L188 296 Z"/>
+    <path class="gate" data-node="gate" d="M264 250 L340 296 L264 342 L188 296 Z"/>
     <text class="nt" x="264" y="292" text-anchor="middle">Retrieval gate</text>
     <text class="ns" x="264" y="310" text-anchor="middle">${s.gate_skips} skip · ${s.gate_retrieves} retrieve</text>
     ${flow("M264 250 L264 128","dash","e-gate-wm")}${flowLbl(274,196,"only if needed")}
@@ -619,25 +695,25 @@ function archSVG(d){
     ${box(44,576,568,52,"Consolidation · every "+d.consolidate_every+" exchanges",d.chat_pending+"/"+d.consolidate_every*2+" queued → distilled into facts","memory","","consolidation")}
     ${flow("M340 576 L340 528","","e-consol-sem")}${flowLbl(350,560,"distill")}
 
-    <!-- LLM OPS: a SEPARATE system (offline). Detached with a clear gap so it
-         never reads as part of the ephemeral Harness — it improves the agent. -->
-    <rect class="container ops" x="736" y="20" width="292" height="392" rx="16"/>
-    ${lbl(756,44,"LLM OPS — separate system, offline")}
-    ${flowLbl(756,62,"observes the run · improves the agent",'start')}
+    <!-- LLM OPS: the offline improvement loop — inside the harness (it all
+         runs on the laptop) but a distinct tinted sub-panel -->
+    <rect class="container ops" x="736" y="40" width="280" height="372" rx="14"/>
+    ${lbl(752,64,"LLM OPS — offline improvement loop")}
+    ${flowLbl(752,80,"observes each run · improves the agent",'start')}
     <!-- every turn crosses the gap to feed the trace -->
-    <path class="flow" id="e-reply-trace" d="M660 102 C704 96 740 92 784 92" marker-end="url(#arr)"/>
-    ${flowLbl(694,84,"each turn")}
-    ${box(756,74,252,50,"Trace",s.trace_files+" file(s) · always on","ops","","trace")}
-    ${flow("M882 124 L882 140")}
-    ${box(756,140,252,50,"Eval","deterministic + judge","ops")}
-    ${flow("M882 190 L882 206")}
-    ${box(756,206,252,50,"Release gate",d.eval_report?"det "+d.eval_report.deterministic+" · judge "+d.eval_report.judge:"run make gate","ops")}
-    ${flow("M882 256 L882 272")}
-    ${box(756,272,252,50,"Release","new prompt · model · config","ops")}
+    <path class="flow" data-edge="e-reply-trace" d="M660 104 C700 100 726 100 752 106" marker-end="url(#arr)"/>
+    ${flowLbl(688,96,"each turn")}
+    ${box(752,92,250,50,"Trace",s.trace_files+" file(s) · always on","ops","","trace")}
+    ${flow("M878 142 L878 156")}
+    ${box(752,156,250,50,"Eval","deterministic + judge","ops")}
+    ${flow("M878 206 L878 220")}
+    ${box(752,220,250,50,"Release gate",d.eval_report?"det "+d.eval_report.deterministic+" · judge "+d.eval_report.judge:"run make gate","ops")}
+    ${flow("M878 270 L878 284")}
+    ${box(752,284,250,50,"Release","new prompt · model · config","ops")}
     <!-- feedback: Release improves the Harness — a short arrow across the gap,
          so the outer loop closes without a long wrap crowding the margins -->
-    <path class="flow dash" d="M756 300 C716 312 700 350 676 356" marker-end="url(#arr)"/>
-    ${flowLbl(598,344,"improved prompt + config",'end')}
+    <path class="flow dash" d="M752 312 C712 324 698 352 676 358" marker-end="url(#arr)"/>
+    ${flowLbl(596,346,"improved prompt + config",'end')}
   </svg></div>`;
 }
 
@@ -652,7 +728,7 @@ const VIEWS = {
       ].map(([v,l,c])=>`<div class="tile"><b class="${c}">${v}</b><span>${l}</span></div>`).join("");
     return `<div class="tiles">${tiles}</div>
     <h2>Retrieval gate — the hero decision</h2>${gateSplit(s)}
-    <h2 style="margin-top:26px">Architecture — click any box <span id="arch-status" class="arch-status"></span></h2>
+    <h2 style="margin-top:26px">Architecture — click any box <span class="arch-status"></span></h2>
     ${archSVG(d)}
     <h2>Latest turn</h2>${d.turns.length?turnCard(d.turns[0]):'<div class="card empty">no turns yet — talk to Jarvis first</div>'}`;
   },
@@ -766,26 +842,25 @@ const STAGE = {
 let evCursor = null, evQueue = [], playing = false, animating = false;
 
 function hot(sel, cls, ms){
-  const el = document.querySelector(sel);
-  if (!el) return;
-  el.classList.add(cls);
-  setTimeout(()=>el.classList.remove(cls), ms);
+  document.querySelectorAll(sel).forEach(el => {   // every diagram copy lights up
+    el.classList.add(cls);
+    setTimeout(()=>el.classList.remove(cls), ms);
+  });
 }
 function animateStage(ev){
   const spec = STAGE[ev.type];
   if (!spec || !document.querySelector(".arch")) return;
-  const status = document.getElementById("arch-status");
-  if (status) status.innerHTML = `<span class="live-dot"></span>${spec.label}`;
-  spec.nodes.forEach(n => hot("#n-"+n, "hot", 1000));
-  spec.edges.forEach(e => hot("#"+e, "live", 1000));
+  document.querySelectorAll(".arch-status").forEach(st => st.innerHTML = `<span class="live-dot"></span>${spec.label}`);
+  spec.nodes.forEach(n => hot(`[data-node="${n}"]`, "hot", 1000));
+  spec.edges.forEach(e => hot(`[data-edge="${e}"]`, "live", 1000));
   if (ev.type==="gate" && ev.decision==="retrieve"){
-    ["procedural","semantic","episodic"].forEach(n => hot("#n-"+n,"hot",1000));
-    ["e-gate-proc","e-gate-sem","e-gate-epi"].forEach(e => hot("#"+e,"live",1000));
+    ["procedural","semantic","episodic"].forEach(n => hot(`[data-node="${n}"]`,"hot",1000));
+    ["e-gate-proc","e-gate-sem","e-gate-epi"].forEach(e => hot(`[data-edge="${e}"]`,"live",1000));
   }
 }
 function playNext(){
   if (!evQueue.length){ playing=false; animating=false;
-    const st=document.getElementById("arch-status"); if(st) st.innerHTML=""; return; }
+    document.querySelectorAll(".arch-status").forEach(st => st.innerHTML=""); return; }
   playing = true; animating = true;
   animateStage(evQueue.shift());
   setTimeout(playNext, 620);   // stagger so stages light up in sequence
@@ -807,6 +882,7 @@ function render(){
   if (!D) return;
   const v = (location.hash||"#chat").slice(1);
   const view = VIEWS[v] ? v : "overview";
+  document.body.classList.toggle("dock-hidden", view === "chat");  // never two chat inputs
   document.querySelectorAll("nav a").forEach(a=>a.classList.toggle("on", a.dataset.v===view));
   document.getElementById("title").textContent = TITLES[view] || view[0].toUpperCase()+view.slice(1);
   // Chat owns its DOM (don't wipe the input mid-type on the 5s refresh);
@@ -841,6 +917,7 @@ async function refresh(){
 }
 window.addEventListener("hashchange", render);
 window.__hold = (v)=>{ animating = v; };   // test hook: freeze the diagram
+wireDock();
 refresh(); setInterval(refresh, 5000); setInterval(tickLive, 1000);
 pollEvents(); setInterval(pollEvents, 450);   // live harness animation
 </script></body></html>"""
@@ -890,7 +967,6 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def main() -> None:
-    import os
 
     base = int(os.getenv("JARVIS_DASHBOARD_PORT", str(PORT)))
     for port in range(base, base + 10):  # walk past a busy port instead of crashing
