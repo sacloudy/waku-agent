@@ -5,7 +5,8 @@
       "name": "jarvis-dashboard",
       "runtimeExecutable": ".venv/bin/python",
       "runtimeArgs": ["-m", "jarvis.ops.dashboard"],
-      "port": 7777
+      "port": 7777,
+      "autoPort": false
     },
     {
       "name": "phoenix-traces",

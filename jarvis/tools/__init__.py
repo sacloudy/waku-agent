@@ -4,6 +4,7 @@ Apple ecosystem (JARVIS_APPLE_TOOLS=1) and MCP servers (.jarvis/mcp.json)."""
 
 from __future__ import annotations
 
+import os
 import sqlite3
 
 from jarvis.config import Settings
@@ -27,6 +28,14 @@ def build_registry(conn: sqlite3.Connection, settings: Settings, memory=None) ->
         registry.register(memory_admin.make_manage_memory_tool(memory))
         registry.register(memory_admin.make_update_soul_tool(settings))
         registry.register(memory_admin.make_create_skill_tool(settings, memory))
+
+    # Roadmap/skeleton tools (sub-agents, terminal, browser, cron) — off by
+    # default; opt in with JARVIS_EXPERIMENTAL=1. They report "coming soon".
+    if os.getenv("JARVIS_EXPERIMENTAL", "") in ("1", "true", "yes"):
+        from jarvis.tools import experimental
+
+        for t in experimental.make_tools():
+            registry.register(t)
 
     # Apple ecosystem readers/writers (opt-in; first use triggers macOS prompts).
     if settings.apple_tools:

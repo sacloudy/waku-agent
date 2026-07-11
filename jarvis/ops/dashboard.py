@@ -438,7 +438,10 @@ def tools_info() -> dict:
         catalog.append({"name": t.name, "description": t.description,
                         "source": _tool_source(t.name, mcp["servers"])})
     catalog.sort(key=lambda c: (c["source"], c["name"]))
-    return {"catalog": catalog, "mcp": mcp, "apple_on": settings.apple_tools}
+    from jarvis.tools.experimental import PLANNED
+
+    return {"catalog": catalog, "mcp": mcp, "apple_on": settings.apple_tools,
+            "planned": PLANNED}   # whiteboard boxes not wired in yet (coming soon)
 
 
 def run_query(payload: dict) -> dict:

@@ -357,6 +357,24 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 | `make eval-judge` | LLM-as-judge evals (scored %) |
 | `make gate` | the release gate — both eval suites must pass |
 
+## Roadmap — on the whiteboard, coming soon
+
+A few boxes on the architecture chart are deliberately **skeletons** (see
+[`jarvis/tools/experimental.py`](jarvis/tools/experimental.py)) — the intent is drawn so the
+diagram maps to something, but they're not wired into the loop, so nothing is over-promised.
+They're OFF by default; `JARVIS_EXPERIMENTAL=1` registers them (they just report "coming soon"),
+and the dashboard's **Tools** tab lists them under **Coming soon**.
+
+| Whiteboard box | Skeleton tool | Why it's a skeleton (not built yet) |
+|---|---|---|
+| Sub-Agents | `delegate_task` | multi-agent coordination — kept out to keep the core single-agent and readable |
+| Terminal tool | `run_command` | needs a real sandbox + safety surface first |
+| Browser tool | `browse_web` | `search_web` already covers read-only lookups; full browsing is more |
+| Cron Job | `schedule_task` | `make brief` + a system cron line already does scheduled runs today |
+
+The point of a teaching repo is a readable core; these are the natural next tools to add, shown
+as the shape they'll take.
+
 ## Upgrade paths (when you outgrow the defaults)
 
 | Default (zero setup) | Upgrade | How |

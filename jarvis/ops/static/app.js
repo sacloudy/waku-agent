@@ -626,6 +626,13 @@ const VIEWS = {
         <div class="tn">${esc(c.name)}<span class="srcpill ${key==="mcp"?"mcp":key==="apple"?"apple":""}">${esc(key)}</span></div>
         <div class="td">${esc(c.description)}</div></div>`).join("");
     });
+    // Roadmap: whiteboard boxes not wired in yet — set expectations, don't over-promise.
+    if ((t.planned||[]).length){
+      h += `<h2>Coming soon <span class="meta" style="font-weight:400">· on the architecture chart, not wired in yet (opt in with <code>JARVIS_EXPERIMENTAL=1</code>)</span></h2>`;
+      h += t.planned.map(p => `<div class="toolcard" style="opacity:.7">
+        <div class="tn">${esc(p.name)}<span class="srcpill apple">soon · ${esc(p.box)}</span></div>
+        <div class="td">${esc(p.description)}</div></div>`).join("");
+    }
     return h;
   },
   database(d, sub){
