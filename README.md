@@ -57,8 +57,14 @@ uv run waku dashboard                   # …or the browser cockpit → localhos
 | `uv tool install .` → `waku dashboard` | install `waku` **globally**, forever |
 
 `waku` and `waku dashboard` are two doors into the **same** Waku. The dashboard is a tiny web
-server on *your* machine — chat in the browser, that process runs the turn. Nothing leaves your
-laptop. Set `TELEGRAM_BOT_TOKEN` and it starts your bot too. (`make dashboard` works as well.)
+server on *your* machine — chat in the browser, that process runs the turn. The server and state
+stay on your laptop; model requests go to the provider you configured. Set `TELEGRAM_BOT_TOKEN`
+and it starts your bot too. (`make dashboard` works as well.)
+
+## Learn the code
+
+For a source-backed Chinese walkthrough of the architecture, execution path, memory model,
+runtime boundaries, and contribution path, start with [`learning/learning.md`](learning/learning.md).
 
 **Now try it.** *"Remember that Alex prefers morning meetings."* Quit. Restart.
 *"Book a catch-up with Alex on Friday."* → it remembers, and books 9am. Your memory is one
