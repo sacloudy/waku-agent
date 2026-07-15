@@ -32,14 +32,14 @@ uv pip install -e '.[dev]'
 
 ## 源码地图
 
-- 总装配和一轮编排: [`Waku.respond()`](../../../../waku/app.py#L42)
-- 系统提示和记忆注入: [`Session.build_system()`](../../../../waku/runtime/session.py#L64)
-- 会话历史和持久化写回: [`Session.add_exchange()`](../../../../waku/runtime/session.py#L86)
+- 总装配和一轮编排: [`Waku.respond()`](../../../../waku/app.py#L57)
+- 系统提示和记忆注入: [`Session.build_system()`](../../../../waku/runtime/session.py#L82)
+- 会话历史和持久化写回: [`Session.add_exchange()`](../../../../waku/runtime/session.py#L115)
 - 主循环与两个退出条件: [`run_loop()`](../../../../waku/loop/agent.py#L40)
-- 工具安全执行边界: [`ToolRegistry.execute()`](../../../../waku/tools/registry.py#L40)
-- 日历幂等检查和副作用: [`create_event`](../../../../waku/tools/calendar.py#L119)
-- 记忆检索门面: [`Memory.gated_retrieve()`](../../../../waku/memory/__init__.py#L45)
-- trace 与 token ledger: [`Tracer.event()`](../../../../waku/ops/tracing.py#L83)
+- 工具安全执行边界: [`ToolRegistry.execute()`](../../../../waku/tools/registry.py#L67)
+- 日历幂等检查和副作用: [`create_event`](../../../../waku/tools/calendar.py#L161)
+- 记忆检索门面: [`Memory.gated_retrieve()`](../../../../waku/memory/__init__.py#L69)
+- trace 与 token ledger: [`Tracer.event()`](../../../../waku/ops/tracing.py#L120)
 
 ## Demo 索引
 
