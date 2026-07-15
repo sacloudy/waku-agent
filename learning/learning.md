@@ -259,9 +259,9 @@ uv run waku dashboard
 ### 阶段 2：跑通最小流程
 
 - 目标：在不花模型费用的情况下验证仓库骨架。
-- 阅读：[Makefile](../Makefile)、[评测 helper](../evals/helpers.py)、[工具触发测试](../evals/deterministic/test_tool_trigger.py)。
+- 阅读：[Waku Agent Turn 实践课](playground/project_demos/agent_turn/00_README.md)、[Makefile](../Makefile)、[评测 helper](../evals/helpers.py)、[工具触发测试](../evals/deterministic/test_tool_trigger.py)。
 - 需要回答：脚本化 client 如何替代真实模型？测试断言的是模型措辞还是程序副作用？
-- 最小练习：运行 `make eval`，再单独执行幂等测试并观察临时目录中的数据库和 ICS。
+- 最小练习：先运行 Agent Turn Demo 1 观察完整主链, 再运行 `make eval` 并对照正式回归测试。
 
 ### 阶段 3：理解装配与工作记忆
 
