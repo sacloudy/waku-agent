@@ -8,7 +8,7 @@ Agent Turn 是一次从用户输入到最终回复的完整生命周期。它包
 日历工具请求和最终文本, 因而不访问网络; 其余代码全部使用项目真实实现。
 
 运行命令:
-    uv run python learning/playground/project_demos/agent_turn/01_full_agent_turn_demo.py
+    .venv/bin/python learning/playground/project_demos/agent_turn/01_full_agent_turn_demo.py
 
 前置条件:
     从仓库根目录运行; 已执行 ``uv pip install -e '.[dev]'``; 不需要环境变量。

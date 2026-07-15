@@ -8,7 +8,7 @@
 Loop 会真实执行工具三次, 然后返回明确的 iteration limit 文本。
 
 运行命令:
-    uv run python learning/playground/project_demos/agent_turn/02_iteration_guardrail_demo.py
+    .venv/bin/python learning/playground/project_demos/agent_turn/02_iteration_guardrail_demo.py
 
 前置条件:
     从仓库根目录运行; 已安装项目; 不需要文件、网络或环境变量。

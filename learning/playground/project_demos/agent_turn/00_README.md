@@ -45,8 +45,8 @@ uv pip install -e '.[dev]'
 
 | Demo | 学习点 | 运行命令 |
 | --- | --- | --- |
-| [01 完整 Agent Turn](01_full_agent_turn_demo.py) | 跑真实 Waku 主链, 观察三次模型调用、两次主 Loop 迭代、记忆与技能注入、日历副作用及写回产物 | `uv run python learning/playground/project_demos/agent_turn/01_full_agent_turn_demo.py` |
-| [02 迭代上限保护](02_iteration_guardrail_demo.py) | 让脚本化模型永远请求工具, 观察硬退出如何阻止无限循环 | `uv run python learning/playground/project_demos/agent_turn/02_iteration_guardrail_demo.py` |
+| [01 完整 Agent Turn](01_full_agent_turn_demo.py) | 跑真实 Waku 主链, 观察三次模型调用、两次主 Loop 迭代、记忆与技能注入、日历副作用及写回产物 | `.venv/bin/python learning/playground/project_demos/agent_turn/01_full_agent_turn_demo.py` |
+| [02 迭代上限保护](02_iteration_guardrail_demo.py) | 让脚本化模型永远请求工具, 观察硬退出如何阻止无限循环 | `.venv/bin/python learning/playground/project_demos/agent_turn/02_iteration_guardrail_demo.py` |
 
 ## 新手推荐路线
 

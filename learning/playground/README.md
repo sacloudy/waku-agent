@@ -12,4 +12,4 @@
 
 | 分类 | Demo | 目标 | 运行命令 |
 | --- | --- | --- | --- |
-| project_demos | [Waku Agent Turn 实践课](project_demos/agent_turn/00_README.md) | 用脚本化模型驱动真实 Waku 主链, 观察记忆、Loop、工具副作用、写回、trace 和迭代保护 | `uv run python learning/playground/project_demos/agent_turn/01_full_agent_turn_demo.py` |
+| project_demos | [Waku Agent Turn 实践课](project_demos/agent_turn/00_README.md) | 用脚本化模型驱动真实 Waku 主链, 观察记忆、Loop、工具副作用、写回、trace 和迭代保护 | `.venv/bin/python learning/playground/project_demos/agent_turn/01_full_agent_turn_demo.py` |
